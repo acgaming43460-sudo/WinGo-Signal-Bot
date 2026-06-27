@@ -7,7 +7,7 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 from telegram.error import TelegramError, Forbidden, BadRequest
 
 # ================= CONFIGURATION =================
-BOT_TOKEN = os.environ.get('BOT_TOKEN') # Koyeb se aayega
+BOT_TOKEN = os.environ.get('BOT_TOKEN') # Render se aayega
 BOT_USERNAME = "@PrimeSignalZzzBot"
 CHANNEL_ID = "@primesignalzzzofficial"
 ADMIN_IDS = [8986058067]
@@ -230,7 +230,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         logger.exception(f"Error: {e}")
         await query.edit_message_text(f"⚠️ Error occurred")
 
-# ===== KOYEB KEEPALIVE =====
+# ===== RENDER KEEPALIVE - PORT 8080 =====
 from flask import Flask
 import threading
 
@@ -244,7 +244,7 @@ def run_flask():
     app.run(host='0.0.0.0', port=8080)
 
 threading.Thread(target=run_flask).start()
-# ===========================
+# ========================================
 
 def main() -> None:
     app = Application.builder().token(BOT_TOKEN).build()
@@ -255,17 +255,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-import threading
-from http.server import HTTPServer, BaseHTTPRequestHandler
-
-class Handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b'Bot is alive!')
-
-def keep_alive():
-    server = HTTPServer(('0.0.0.0', 8080), Handler)
-    server.serve_forever()
-
-threading.Thread(target=keep_alive).start()
