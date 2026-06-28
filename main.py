@@ -1,13 +1,15 @@
-import os
 import logging
+import asyncio # <- YE ADD KAR
+import threading # <- YE ADD KAR
 from datetime import datetime
+from flask import Flask # <- YE ADD KAR
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 from telegram.error import TelegramError, Forbidden, BadRequest
 
 # ================= CONFIGURATION =================
-BOT_TOKEN = os.environ.get('BOT_TOKEN') # Render se aayega
+BOT_TOKEN = "8736525444:AAGdNIBXpoWNjHzhNfZMNl_wDPeuqa3Fw9I" # Real token daal
 BOT_USERNAME = "@PrimeSignalZzzBot"
 CHANNEL_ID = "@primesignalzzzofficial"
 ADMIN_IDS = [8986058067]
@@ -23,6 +25,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 user_sessions = {}
+
+# Flask for Render port binding <- YE ADD KAR
+app_flask = Flask(__name__)
+@app_flask.route('/')
+def home():
+    return "Bot is alive!"
+
+def run_flask(): # <- YE FUNCTION ADD KAR
+    app_flask.run(host='0.0.0.0', port=8080)
 
 class PredictionSession:
     def __init__(self):
@@ -230,28 +241,20 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         logger.exception(f"Error: {e}")
         await query.edit_message_text(f"⚠️ Error occurred")
 
-# ===== RENDER KEEPALIVE - PORT 8080 =====
-from flask import Flask
-import threading
-
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return f"{BOT_NAME} v{VERSION} - Online ✅"
-
-def run_flask():
-    app.run(host='0.0.0.0', port=8080)
-
-threading.Thread(target=run_flask).start()
-# ========================================
-
-def main() -> None:
+# YE FUNCTION BADAL DIYA <- IMPORTANT
+async def run_bot():
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(callback_handler))
     logger.info(f"{BOT_NAME} v{VERSION} - Ready")
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling(allowed_updates=Update.ALL_TYPES)
+    await asyncio.Event().wait()
+
+def main() -> None: # <- YE FUNCTION BADAL DIYA
+    threading.Thread(target=run_flask, daemon=True).start()
+    asyncio.run(run_bot())
 
 if __name__ == "__main__":
     main()
